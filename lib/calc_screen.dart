@@ -82,15 +82,118 @@ class _MyCalcScreenState extends State<MyCalcScreen> {
   } 
 
   void onBtnTap(String value) {
+    if (value == Btn.del) {
+      delete();
+      return;
+    }
+    if (value == Btn.clr) {
+      clearAll();
+      return;
+    }
+    if (value == Btn.per) {
+      convertToPercentage();
+      return;
+    }
+    if (value == Btn.calculate) {
+      calculate();
+      return;
+    }
 
+    appendValue(value);
+  } 
+
+  // Calculates the result based on the current input
+void calculate() {
+  if (number1.isEmpty) return; // No input to calculate
+  if (operand.isEmpty) return;
+  if (number2.isEmpty) return;
+
+  double num1 = double.parse(number1);
+  double num2 = double.parse(number2);
+
+  var result = 0.0;
+  switch (operand) {
+    case Btn.add:
+    result = num1 + num2;
+      break;
+      case Btn.subtract:
+    result = num1 - num2;
+      break;
+      case Btn.multiply:
+    result = num1 * num2;
+      break;
+      case Btn.divide:
+    result = num1 / num2;
+      break;
+    default:
+  }
+  setState(() {
+    number1 = "$result"; // Update number1 with the result
+  
+    if (number1.endsWith('.0')) {
+      number1 = number1.substring(0, number1.length - 2); // Remove trailing .0
+    }
+    operand = ""; // Clear the operand
+    number2 = ""; // Clear number2
+  });
+
+}
+  // Converts output to percentage
+  void convertToPercentage() {
+    if (number1.isNotEmpty && operand.isNotEmpty && number2.isNotEmpty ) {
+      // calculate before conversion 
+      calculate(); // Calculate the result before converting to percentage
+
+    }
+    if (operand.isNotEmpty) {
+      // Cannot be converted
+      return;
+    }
+
+    final number = double.parse(number1);
+    setState(() {
+      number1 = "${(number / 100)}";
+      operand = ""; // Clear the operand
+      number2 = ""; // Clear number2
+    });
+    
+  }
+
+  // Clear all functionality
+  void clearAll() {
+    setState(() {
+      number1 = ""; // Clear number1
+      operand = ""; // Clear operand
+      number2 = ""; // Clear number2  
+    });
+  }
+
+  // Delete functionality
+  void delete() {
+    if (number2.isNotEmpty) {
+      number2 = number2.substring(0, number2.length - 1); // Remove last character from number2
+    } else if (operand.isNotEmpty) {
+      operand = ""; // Clear the operand if number2 is empty
+    } else if (number1.isNotEmpty) {
+      number1 = number1.substring(0, number1.length - 1); // Remove last character from number1
+    }
+    setState(() {}); // Update the UI
+  }
+
+   // Appends value to the end
+  void appendValue(String value) {
+    // if its operand and not a dot 
     if (value!=Btn.dot&&int.tryParse(value)== null) {
-
+    // Operand or special button pressed
       if (operand.isNotEmpty&&number2.isNotEmpty) {
         // Calculate the equation before assigning a new operand
+        calculate(); // Calculate the result before assigning a new operand
       }
       operand = value; // Assign the operand
-    } else if (number1.isEmpty ||operand.isEmpty){
-      // number1 = "1.2"
+    }
+    // Assign value to number1 variable
+     else if (number1.isEmpty ||operand.isEmpty){
+      //check if tha value is a decimal eg, number1 = "1.2"
       if (value == Btn.dot && number1.contains(Btn.dot)) return;
         // Prevent multiple dots in the first number
       if (value == Btn.dot && (number1.isEmpty || number1==Btn.dot)) {
@@ -98,7 +201,9 @@ class _MyCalcScreenState extends State<MyCalcScreen> {
         value = "0."; // If the first number is empty or just a dot, make it "0."
       }
       number1 += value; // Append the value to number1
-    } else if (number2.isEmpty ||operand.isNotEmpty){
+    }
+    // Assign value to number2 variable
+     else if (number2.isEmpty ||operand.isNotEmpty){
       // number1 = "1.2"
       if (value == Btn.dot && number2.contains(Btn.dot)) return;
         // Prevent multiple dots in the first number
